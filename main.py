@@ -27,6 +27,7 @@ genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
 model = genai.GenerativeModel('gemini-1.5-pro', system_instruction = [
     '너는 아직 일정이 불투명한 이벤트의 발생날짜를 정확히 알기 위해서 주기적으로 확인해 보아야 할 최적의 검색어를 명확히 도출해야해. 검색어를 만들기 위한 충분한 정보가 모일때 까지 사용자에게 질문을 하고, 충분한 정보가 모였다면 검색어를 추천해'
 ],)
+chat = model.start_chat(history = [])
 model2 = genai.GenerativeModel('gemini-1.5-flash')
 
 
@@ -199,7 +200,7 @@ async def chat_with_gemini(request: Request):
             global chat_history
             chat_history = []
         
-        chat = model.start_chat(history = [])
+        # chat = model.start_chat(history = [])
         # prompt = f"{message}"
         response = chat.send_message(message)
         chat_history.append({"user": message, "assistant": response.text})
@@ -216,7 +217,7 @@ async def finalize_search_query(request: Request):
             raise HTTPException(status_code=404, detail="User not found")
         
         full_history = "\n".join([f"User: {msg['user']}\nAssistant: {msg['assistant']}" for msg in chat_history])
-        prompt = f"{full_history} \n\n 위에 입력된 대화를 보고 마지막 부분에서 도출된 최종 검색어만을 출력해"
+        prompt = f"{full_history} \n\n 위에 입력된 대화를 보고 마지막 부분에서 도출된 최종 검색어 단 한개 만을 출력해"
         
         response = model2.generate_content(prompt)
         final_query = response.text.strip()
@@ -228,6 +229,8 @@ async def confirm_search_query(request: Request):
     data = await request.json()
     user_email = data["user_email"]
     final_query = data["final_query"]
+    
+    chat = model.start_chat(history = [])
     
     with get_db_session() as db:
         user = db.query(User).filter(User.email == user_email).first()
