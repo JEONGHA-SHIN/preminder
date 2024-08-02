@@ -1,3 +1,4 @@
+#app.py
 import streamlit as st
 import requests
 
@@ -54,6 +55,24 @@ def chat_with_gemini():
             st.session_state.pop("final_query", None)  # final_query 제거
             st.rerun()
             
+def test_search_interface():
+    st.header("Test Search and Relevance")
+    query = st.text_input("Enter a search query")
+    if st.button("Test Search"):
+        response = requests.post(f"{BASE_URL}/test_search/", json={"query": query})
+        data = response.json()
+        
+        st.subheader("Summary")
+        st.json(data["summary"])
+        
+        st.subheader("Detailed Results")
+        for result in data["results"]:
+            st.write(f"Title: {result['title']}")
+            st.write(f"Snippet: {result['snippet']}")
+            st.write(f"Link: {result['link']}")
+            st.write(f"Topic Relevant: {'Yes' if result['topic_relevant'] else 'No'}")
+            st.write(f"Contains Future Date: {'Yes' if result['future_date'] else 'No'}")
+            st.write("---")
 
             
 def main_app():
@@ -61,6 +80,9 @@ def main_app():
     st.write(f"Welcome, {st.session_state.user_email}!")
     
     chat_with_gemini()
+    
+    if st.checkbox("Show Test Interface"):
+        test_search_interface()
     
     # Sidebar with event list
     st.sidebar.title("Your Events")

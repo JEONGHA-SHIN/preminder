@@ -1,2 +1,5 @@
 .env
 __pycache__
+nohup.out
+email_test.py
+gemini_test.py

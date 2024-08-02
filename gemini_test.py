@@ -3,7 +3,7 @@ import textwrap
 
 import google.generativeai as genai
 
-GOOGLE_API_KEY='AIzaSyAWczIb0hD7XU5R5djXp4nzzeLq_IkaFcc'
+GOOGLE_API_KEY=''
 
 genai.configure(api_key=GOOGLE_API_KEY)
 
