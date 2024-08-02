@@ -7,8 +7,6 @@ from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from datetime import datetime, timedelta
-import smtplib
-from email.mime.text import MIMEText
 import schedule
 import time
 import threading
@@ -21,7 +19,9 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 import schedule
 import time
-
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 
 app = FastAPI()
@@ -320,8 +320,35 @@ def has_relevant_info(results, query):
     return combined_results
 
 def send_email(to_email, subject, body):
-    # Send email using SMTP
-    # This is a placeholder function
+    # 이메일 서버 설정
+    smtp_server = "smtp.gmail.com"
+    port = 587  # Gmail의 TLS 포트
+    sender_email = os.getenv("SENDER_EMAIL")  # 발신자 이메일 주소
+    password = os.getenv("EMAIL_PASSWORD")  # 발신자 이메일 비밀번호 또는 앱 비밀번호
+    print(sender_email, password)
+    
+    # 이메일 메시지 생성
+    message = MIMEMultipart()
+    message["From"] = sender_email
+    message["To"] = to_email
+    message["Subject"] = subject
+
+    # 이메일 본문 추가
+    message.attach(MIMEText(body, "plain"))
+
+    try:
+        # SMTP 서버 연결 및 로그인
+        server = smtplib.SMTP(smtp_server, port)
+        server.starttls()  # TLS 보안 연결
+        server.login(sender_email, password)
+
+        # 이메일 발송
+        server.send_message(message)
+        print(f"Email sent successfully to {to_email}")
+    except Exception as e:
+        print(f"Error sending email: {e}")
+    finally:
+        server.quit()  # SMTP 서버 연결 종료
     print(f"Sending email to {to_email}")
     print(f"Subject: {subject}")
     print(f"Body: {body}")
@@ -403,7 +430,7 @@ def run_daily_check():
     thread.start()
 # Run scheduled tasks in a separate thread
 def run_schedule():
-    schedule.every().day.at("19:55").do(run_daily_check)
+    schedule.every().day.at("21:30").do(run_daily_check)
     
     while True:
         schedule.run_pending()

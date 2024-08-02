@@ -4,10 +4,27 @@ import requests
 
 BASE_URL = "http://localhost:8000"
 
+# def login():
+#     st.title("Preminder Login")
+#     email = st.text_input("Enter your email")
+#     if st.button("Login"):
+#         try:
+#             response = requests.post(f"{BASE_URL}/users/", json={"email": email})
+#             response.raise_for_status()
+#             st.session_state.user_email = email
+#             st.session_state.messages = []
+#             st.success("Logged in successfully!")
+#             st.rerun()
+#         except requests.RequestException as e:
+#             st.error(f"Login failed: {str(e)}")
 def login():
     st.title("Preminder Login")
-    email = st.text_input("Enter your email")
-    if st.button("Login"):
+    
+    with st.form("login_form"):
+        email = st.text_input("Enter your email")
+        submitted = st.form_submit_button("Login")
+
+    if submitted or (email and st.session_state.get('login_attempt', False)):
         try:
             response = requests.post(f"{BASE_URL}/users/", json={"email": email})
             response.raise_for_status()
@@ -17,6 +34,12 @@ def login():
             st.rerun()
         except requests.RequestException as e:
             st.error(f"Login failed: {str(e)}")
+    
+    # 폼이 제출되지 않았지만 이메일이 입력된 경우, 다음 실행에서 로그인 시도
+    if email and not submitted:
+        st.session_state.login_attempt = True
+    else:
+        st.session_state.login_attempt = False
                         
 def chat_with_gemini():
     st.header("Chat with Gemini to Create Your Event Query")
