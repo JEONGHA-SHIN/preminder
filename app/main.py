@@ -29,7 +29,7 @@ app = FastAPI()
 
 # Gemini API 설정
 # load_dotenv()
-genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
+genai.configure(api_key=settings.GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-1.5-pro', system_instruction = [
     f"""너는 아직 일정이 불투명한 이벤트의 발생날짜를 정확히 알기 위해서 주기적으로 확인해 보아야 할 최적의 검색어를 명확히 도출해야해. 
     검색어를 만들기 위한 충분한 정보가 모일때 까지 사용자에게 질문을 하고, 충분한 정보가 모였다면 검색어를 추천해. 
@@ -149,15 +149,6 @@ def add_chat_message(chat: ChatMessage):
         db.refresh(db_chat)
         return db_chat
 
-# @app.get("/events/")
-# def get_user_events(user_email: str):
-#     with get_db_session() as db:
-#         user = db.query(User).filter(User.email == user_email).first()
-#         if not user:
-#             raise HTTPException(status_code=404, detail="User not found")
-#         events = db.query(Event).filter(Event.user_id == user.id).all()
-#         return events
-
 @app.get("/events/{user_email}")
 def get_user_events(user_email: str):
     with get_db_session() as db:
@@ -268,8 +259,8 @@ async def confirm_search_query(request: Request):
 
 def search_google(query):
     try:
-        service = build("customsearch", "v1", developerKey=os.getenv('GOOGLE_API_KEY'))
-        result = service.cse().list(q=query, cx=os.getenv('GOOGLE_CSE_ID'), num=3).execute()
+        service = build("customsearch", "v1", developerKey=settings.GOOGLE_API_KEY)
+        result = service.cse().list(q=query, cx=settings.GOOGLE_CSE_ID, num=3).execute()
         
         search_results = []
         if 'items' in result:
@@ -325,10 +316,10 @@ def has_relevant_info(results, query):
 
 def send_email(to_email, subject, body):
     # 이메일 서버 설정
-    smtp_server = "smtp.gmail.com"
-    port = 587  # Gmail의 TLS 포트
-    sender_email = os.getenv("SENDER_EMAIL")  # 발신자 이메일 주소
-    password = os.getenv("EMAIL_PASSWORD")  # 발신자 이메일 비밀번호 또는 앱 비밀번호
+    smtp_server = settings.SMTP_SERVER
+    port = 587  
+    sender_email = settings.SENDER_EMAIL  # 발신자 이메일 주소
+    password = settings.EMAIL_PASSWORD  # 발신자 이메일 비밀번호 또는 앱 비밀번호
     print(sender_email, password)
     
     # 이메일 메시지 생성
@@ -381,6 +372,7 @@ def config_email_body(event):
     return None
 
 def check_events():
+    print(f"Running scheduled task at {datetime.now()}")
     with get_db_session() as db:
         events = db.query(Event).all()
         for event in events:
@@ -430,19 +422,23 @@ async def test_search(request: Request):
     }
     
 def run_daily_check():
+    print("start batch")
     thread = threading.Thread(target=check_events)
     thread.start()
+    
 # Run scheduled tasks in a separate thread
 def run_schedule():
-    schedule.every().day.at('BATCH_TIME').do(run_daily_check)
-    
+    schedule.every().day.at(settings.BATCH_TIME).do(run_daily_check)
     while True:
         schedule.run_pending()
         time.sleep(1)
-
-threading.Thread(target=run_schedule, daemon=True).start()
+        
+def start_scheduler():
+    print("start scheduler")
+    threading.Thread(target=run_schedule, daemon=True).start()
 
 
 if __name__ == "__main__":
+    start_scheduler()
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

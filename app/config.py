@@ -11,6 +11,7 @@ class Settings:
     GOOGLE_CSE_ID = os.getenv("GOOGLE_CSE_ID")
     SENDER_EMAIL = os.getenv("SENDER_EMAIL")
     EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
-    BATCH_TIME = "22:47"
+    SMTP_SERVER = os.getenv("SMTP_SERVER")
+    BATCH_TIME = "08:00"
 
 settings = Settings()
