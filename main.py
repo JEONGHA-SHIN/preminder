@@ -430,7 +430,7 @@ def run_daily_check():
     thread.start()
 # Run scheduled tasks in a separate thread
 def run_schedule():
-    schedule.every().day.at("21:30").do(run_daily_check)
+    schedule.every().day.at("20:49").do(run_daily_check)
     
     while True:
         schedule.run_pending()
