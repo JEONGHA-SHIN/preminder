@@ -117,6 +117,13 @@ Preminder는 중요한 이벤트의 날짜를 놓치지 않도록 도와주는 �
 - FastAPI 백엔드: http://localhost:8000
 - Streamlit 프론트엔드: http://localhost:8501
 
+## To Do
+
+- [ ] 서비스/이메일 도메인 구매 및 연계
+- [ ] 로그인 과정에 Oauth 적용
+- [ ] 일정을 찾으면 Google Task / Apple Reminder에 자동 등록
+- [ ] 카카오톡 등 채팅 인터페이스에서 검색어 등록 및 알림 확인
+
 ## 기여 방법
 
 1. 이 저장소를 포크합니다.
