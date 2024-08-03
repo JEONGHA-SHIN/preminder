@@ -1,5 +1,6 @@
 #main.py
 import os
+from app.config import settings
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
@@ -27,7 +28,7 @@ from email.mime.multipart import MIMEMultipart
 app = FastAPI()
 
 # Gemini API 설정
-load_dotenv()
+# load_dotenv()
 genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
 model = genai.GenerativeModel('gemini-1.5-pro', system_instruction = [
     f"""너는 아직 일정이 불투명한 이벤트의 발생날짜를 정확히 알기 위해서 주기적으로 확인해 보아야 할 최적의 검색어를 명확히 도출해야해. 
@@ -44,7 +45,8 @@ model3 = genai.GenerativeModel('gemini-1.5-flash', system_instruction = [
     ],)
 
 # Database setup
-SQLALCHEMY_DATABASE_URL = "sqlite:///./preminder.db"
+SQLALCHEMY_DATABASE_URL = settings.DATABASE_URL 
+#"sqlite:///./preminder.db"
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
@@ -70,6 +72,8 @@ class ChatHistory(Base):
     is_user = Column(Boolean)
     timestamp = Column(DateTime, default=datetime.utcnow)
 
+import os
+os.makedirs(os.path.dirname(settings.DATABASE_URL.replace("sqlite:///", "")), exist_ok=True)
 Base.metadata.create_all(bind=engine)
 
 # Dependency
@@ -430,7 +434,7 @@ def run_daily_check():
     thread.start()
 # Run scheduled tasks in a separate thread
 def run_schedule():
-    schedule.every().day.at("20:49").do(run_daily_check)
+    schedule.every().day.at('BATCH_TIME').do(run_daily_check)
     
     while True:
         schedule.run_pending()

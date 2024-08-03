@@ -1,6 +1,7 @@
 .env
 __pycache__
 nohup.out
-email_test.py
-gemini_test.py
-ttt.txt
+tests/email_test.py
+tests/gemini_test.py
+tests/ttt.txt
+*.db

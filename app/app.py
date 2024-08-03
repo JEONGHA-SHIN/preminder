@@ -1,8 +1,13 @@
 #app.py
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from config import settings
 import streamlit as st
 import requests
 
-BASE_URL = "http://localhost:8000"
+#BASE_URL = "http://localhost:8000"
+BASE_URL = settings.BASE_URL
 
 st.set_page_config(
     page_title="PREMINDER",
